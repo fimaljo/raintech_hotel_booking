@@ -68,8 +68,6 @@ flutter test
 - Better UI/UX: clearer visual hierarchy and feedback
 - A couple more edge-case unit tests around date boundaries
 
-These stay inside the current single-page, hardcoded-data design — the brief asked not to add auth, payments, or persistence.
-
 ## License
 
 Submitted as a take-home coding exercise.
