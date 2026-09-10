@@ -11,8 +11,8 @@ class BookingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<BookingProvider>();
-
+    // Static chrome — does not watch the provider, so it won't rebuild on
+    // date/room changes. Only nested Consumers/Selectors rebuild.
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
@@ -56,16 +56,21 @@ class BookingPage extends StatelessWidget {
                     ),
                   ),
                   const Text('Guests: '),
-                  DropdownButton<int?>(
-                    value: provider.minGuestsFilter,
-                    hint: const Text('Any'),
-                    items: const [
-                      DropdownMenuItem(value: null, child: Text('Any')),
-                      DropdownMenuItem(value: 2, child: Text('2+')),
-                      DropdownMenuItem(value: 3, child: Text('3+')),
-                      DropdownMenuItem(value: 4, child: Text('4+')),
-                    ],
-                    onChanged: provider.setGuestFilter,
+                  Selector<BookingProvider, int?>(
+                    selector: (_, provider) => provider.minGuestsFilter,
+                    builder: (context, filter, _) {
+                      return DropdownButton<int?>(
+                        value: filter,
+                        hint: const Text('Any'),
+                        items: const [
+                          DropdownMenuItem(value: null, child: Text('Any')),
+                          DropdownMenuItem(value: 2, child: Text('2+')),
+                          DropdownMenuItem(value: 3, child: Text('3+')),
+                          DropdownMenuItem(value: 4, child: Text('4+')),
+                        ],
+                        onChanged: context.read<BookingProvider>().setGuestFilter,
+                      );
+                    },
                   ),
                 ],
               ),

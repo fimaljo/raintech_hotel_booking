@@ -49,43 +49,51 @@ class DateFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<BookingProvider>();
     final today = DateTime(
       DateTime.now().year,
       DateTime.now().month,
       DateTime.now().day,
     );
 
-    return Row(
-      children: [
-        Expanded(
-          child: _DateButton(
-            title: 'Check-in',
-            value: _label(provider.checkIn),
-            onPressed: () => _pickDate(
-              context: context,
-              current: provider.checkIn,
-              firstDate: today,
-              onPicked: provider.setCheckIn,
+    return Selector<BookingProvider, (DateTime?, DateTime?)>(
+      selector: (_, provider) => (provider.checkIn, provider.checkOut),
+      builder: (context, dates, _) {
+        final checkIn = dates.$1;
+        final checkOut = dates.$2;
+        final provider = context.read<BookingProvider>();
+
+        return Row(
+          children: [
+            Expanded(
+              child: _DateButton(
+                title: 'Check-in',
+                value: _label(checkIn),
+                onPressed: () => _pickDate(
+                  context: context,
+                  current: checkIn,
+                  firstDate: today,
+                  onPicked: provider.setCheckIn,
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _DateButton(
-            title: 'Check-out',
-            value: _label(provider.checkOut),
-            onPressed: () => _pickDate(
-              context: context,
-              current: provider.checkOut,
-              firstDate: provider.checkIn != null
-                  ? provider.checkIn!.add(const Duration(days: 1))
-                  : today.add(const Duration(days: 1)),
-              onPicked: provider.setCheckOut,
+            const SizedBox(width: 12),
+            Expanded(
+              child: _DateButton(
+                title: 'Check-out',
+                value: _label(checkOut),
+                onPressed: () => _pickDate(
+                  context: context,
+                  current: checkOut,
+                  firstDate: checkIn != null
+                      ? checkIn.add(const Duration(days: 1))
+                      : today.add(const Duration(days: 1)),
+                  onPicked: provider.setCheckOut,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

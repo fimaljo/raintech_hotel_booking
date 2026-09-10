@@ -11,6 +11,26 @@ DateTime today({DateTime? now}) {
   return dateOnly(current);
 }
 
+const String pastCheckInMessage = 'Check-in cannot be in the past.';
+const String checkoutOrderMessage = 'Check-out must be after check-in.';
+const String roomConflictMessage =
+    'This room is already booked for the selected dates.';
+
+/// Pure booking quote: nights, total, and any validation/conflict error.
+class BookingQuote {
+  const BookingQuote({
+    this.error,
+    this.nights,
+    this.total,
+  });
+
+  final String? error;
+  final int? nights;
+  final int? total;
+
+  bool get canBook => error == null && nights != null && total != null;
+}
+
 /// Validates check-in / check-out rules.
 ///
 /// Returns `null` when valid or when dates are incomplete.
@@ -29,11 +49,11 @@ String? validateDates({
   final todayDate = today(now: now);
 
   if (inDate.isBefore(todayDate)) {
-    return 'Check-in cannot be in the past.';
+    return pastCheckInMessage;
   }
 
   if (!outDate.isAfter(inDate)) {
-    return 'Check-out must be after check-in.';
+    return checkoutOrderMessage;
   }
 
   return null;
@@ -58,7 +78,7 @@ int? nightsBetween({
 }
 
 /// Total price = nights × room price per night.
-int? totalPrice({
+int? calculateTotalPrice({
   DateTime? checkIn,
   DateTime? checkOut,
   Room? room,
@@ -72,6 +92,56 @@ int? totalPrice({
     return null;
   }
   return nights * room.pricePerNight;
+}
+
+/// Combines date validation, conflict checks, nights, and total in one pure call.
+BookingQuote computeBookingQuote({
+  DateTime? checkIn,
+  DateTime? checkOut,
+  Room? room,
+  List<ExistingBooking> existingBookings = const [],
+  DateTime? now,
+}) {
+  final dateError = validateDates(
+    checkIn: checkIn,
+    checkOut: checkOut,
+    now: now,
+  );
+  if (dateError != null) {
+    return BookingQuote(error: dateError);
+  }
+
+  if (checkIn == null || checkOut == null) {
+    return const BookingQuote();
+  }
+
+  if (room != null &&
+      hasBookingConflict(
+        roomCode: room.code,
+        checkIn: checkIn,
+        checkOut: checkOut,
+        existingBookings: existingBookings,
+      )) {
+    return const BookingQuote(error: roomConflictMessage);
+  }
+
+  final nights = nightsBetween(
+    checkIn: checkIn,
+    checkOut: checkOut,
+    now: now,
+  );
+  if (nights == null) {
+    return const BookingQuote();
+  }
+
+  if (room == null) {
+    return BookingQuote(nights: nights);
+  }
+
+  return BookingQuote(
+    nights: nights,
+    total: nights * room.pricePerNight,
+  );
 }
 
 /// Formats an amount in Indian Rupees.

@@ -5,6 +5,7 @@ import '../models/existing_booking.dart';
 import '../models/room.dart';
 import '../utils/booking_calc.dart';
 
+/// Holds booking UI state and delegates rules to [booking_calc] pure functions.
 class BookingProvider extends ChangeNotifier {
   BookingProvider({
     List<Room>? rooms,
@@ -34,6 +35,7 @@ class BookingProvider extends ChangeNotifier {
 
   DateTime get _now => _clock();
 
+  /// Rooms filtered by minimum guest capacity (bonus).
   List<Room> get filteredRooms {
     final filter = _minGuestsFilter;
     if (filter == null) {
@@ -41,6 +43,14 @@ class BookingProvider extends ChangeNotifier {
     }
     return _rooms.where((room) => room.maxGuests >= filter).toList();
   }
+
+  BookingQuote get quote => computeBookingQuote(
+        checkIn: _checkIn,
+        checkOut: _checkOut,
+        room: _selectedRoom,
+        existingBookings: _existingBookings,
+        now: _now,
+      );
 
   String? get dateValidationError => validateDates(
         checkIn: _checkIn,
@@ -63,16 +73,8 @@ class BookingProvider extends ChangeNotifier {
     );
   }
 
-  String? get validationError {
-    final dateError = dateValidationError;
-    if (dateError != null) {
-      return dateError;
-    }
-    if (hasConflict) {
-      return 'This room is already booked for the selected dates.';
-    }
-    return null;
-  }
+  /// Combined user-facing validation / conflict message.
+  String? get validationError => quote.error;
 
   String? get guidanceMessage {
     if (validationError != null) {
@@ -87,24 +89,11 @@ class BookingProvider extends ChangeNotifier {
     return null;
   }
 
-  int? get nights => nightsBetween(
-        checkIn: _checkIn,
-        checkOut: _checkOut,
-        now: _now,
-      );
+  int? get nights => quote.nights;
 
-  int? get total => totalPrice(
-        checkIn: _checkIn,
-        checkOut: _checkOut,
-        room: _selectedRoom,
-        now: _now,
-      );
+  int? get totalPrice => quote.total;
 
-  bool get isReadyToBook =>
-      _selectedRoom != null &&
-      nights != null &&
-      total != null &&
-      validationError == null;
+  bool get isReadyToBook => quote.canBook;
 
   void setCheckIn(DateTime? date) {
     _checkIn = date == null ? null : dateOnly(date);
@@ -126,6 +115,19 @@ class BookingProvider extends ChangeNotifier {
   void setGuestFilter(int? minGuests) {
     _minGuestsFilter = minGuests;
     _clearSelectionIfFilteredOut();
+    notifyListeners();
+  }
+
+  void clearSelection() {
+    _selectedRoom = null;
+    notifyListeners();
+  }
+
+  void reset() {
+    _checkIn = null;
+    _checkOut = null;
+    _selectedRoom = null;
+    _minGuestsFilter = null;
     notifyListeners();
   }
 
