@@ -11,8 +11,6 @@ class BookingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Static chrome — does not watch the provider, so it won't rebuild on
-    // date/room changes. Only nested Consumers/Selectors rebuild.
     return Scaffold(
       body: Center(
         child: ConstrainedBox(

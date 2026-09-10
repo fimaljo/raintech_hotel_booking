@@ -1,7 +1,6 @@
 import '../models/existing_booking.dart';
 import '../models/room.dart';
 
-/// Sample rooms from the Raintech coding-test brief.
 const List<Room> sampleRooms = [
   Room(
     code: 'R101',
@@ -35,7 +34,6 @@ const List<Room> sampleRooms = [
   ),
 ];
 
-/// Hardcoded existing bookings for conflict checks (used in a later step).
 final List<ExistingBooking> sampleExistingBookings = [
   ExistingBooking(
     roomCode: 'R101',

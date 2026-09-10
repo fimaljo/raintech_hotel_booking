@@ -1,4 +1,3 @@
-/// A hardcoded booking used later for date-conflict checks (bonus).
 class ExistingBooking {
   const ExistingBooking({
     required this.roomCode,

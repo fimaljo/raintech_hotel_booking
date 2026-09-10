@@ -1,11 +1,9 @@
 import '../models/existing_booking.dart';
 import '../models/room.dart';
 
-/// Returns a date with time set to midnight (local).
 DateTime dateOnly(DateTime date) =>
     DateTime(date.year, date.month, date.day);
 
-/// Today's date at midnight (local). Injectable [now] keeps tests deterministic.
 DateTime today({DateTime? now}) {
   final current = now ?? DateTime.now();
   return dateOnly(current);
@@ -16,7 +14,6 @@ const String checkoutOrderMessage = 'Check-out must be after check-in.';
 const String roomConflictMessage =
     'This room is already booked for the selected dates.';
 
-/// Pure booking quote: nights, total, and any validation/conflict error.
 class BookingQuote {
   const BookingQuote({
     this.error,
@@ -31,10 +28,6 @@ class BookingQuote {
   bool get canBook => error == null && nights != null && total != null;
 }
 
-/// Validates check-in / check-out rules.
-///
-/// Returns `null` when valid or when dates are incomplete.
-/// Returns a human-readable error when the chosen range is invalid.
 String? validateDates({
   DateTime? checkIn,
   DateTime? checkOut,
@@ -59,7 +52,6 @@ String? validateDates({
   return null;
 }
 
-/// Number of nights between check-in and check-out (calendar days).
 int? nightsBetween({
   DateTime? checkIn,
   DateTime? checkOut,
@@ -77,7 +69,6 @@ int? nightsBetween({
   return outDate.difference(inDate).inDays;
 }
 
-/// Total price = nights × room price per night.
 int? calculateTotalPrice({
   DateTime? checkIn,
   DateTime? checkOut,
@@ -94,7 +85,6 @@ int? calculateTotalPrice({
   return nights * room.pricePerNight;
 }
 
-/// Combines date validation, conflict checks, nights, and total in one pure call.
 BookingQuote computeBookingQuote({
   DateTime? checkIn,
   DateTime? checkOut,
@@ -144,10 +134,9 @@ BookingQuote computeBookingQuote({
   );
 }
 
-/// Formats an amount in Indian Rupees.
 String formatRupees(int amount) => '₹$amount';
 
-/// True when [checkIn, checkOut) overlaps an existing booking for the same room.
+/// Stay ranges are half-open: [checkIn, checkOut). Checkout day frees the room.
 bool hasBookingConflict({
   required String roomCode,
   required DateTime checkIn,

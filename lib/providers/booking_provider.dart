@@ -5,7 +5,6 @@ import '../models/existing_booking.dart';
 import '../models/room.dart';
 import '../utils/booking_calc.dart';
 
-/// Holds booking UI state and delegates rules to [booking_calc] pure functions.
 class BookingProvider extends ChangeNotifier {
   BookingProvider({
     List<Room>? rooms,
@@ -35,7 +34,6 @@ class BookingProvider extends ChangeNotifier {
 
   DateTime get _now => _clock();
 
-  /// Rooms filtered by minimum guest capacity (bonus).
   List<Room> get filteredRooms {
     final filter = _minGuestsFilter;
     if (filter == null) {
@@ -73,7 +71,6 @@ class BookingProvider extends ChangeNotifier {
     );
   }
 
-  /// Combined user-facing validation / conflict message.
   String? get validationError => quote.error;
 
   String? get guidanceMessage {
